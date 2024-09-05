@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hand Gesture Recognition</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #video_feed {
+            width: 640px;
+            height: 480px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+        #letter_box {
+            width: 200px;
+            height: 200px;
+            border: 5px solid #fff;
+            margin-left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5em;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            color: #333;
+            background: #ffb3b3;
+        }
+        #word_box {
+            margin-top: 20px;
+            width: 640px;
+            height: 50px;
+            border: 5px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            background: #b3e6ff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        button:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hand Gesture Recognition</h1>
+    <div id="container">
+        <img id="video_feed" src="{{ url_for('video_feed') }}">
+        <div id="letter_box">A</div>
+    </div>
+    <div id="word_box"></div>
+    <button onclick="resetWord()">Reset Word</button>
+    <script>
+        function updateLetter() {
+            fetch('/current_letter')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('letter_box').innerText = data.letter;
+                });
+        }
+
+        function updateWord() {
+            fetch('/recognized_word')
+                .then(response => response.json())
+                .then(data => {
+                    const wordBox = document.getElementById('word_box');
+                    wordBox.innerHTML = '';
+                    const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF'];
+                    data.word.split('').forEach((letter, index) => {
+                        const span = document.createElement('span');
+                        span.innerText = letter;
+                        span.style.color = colors[index % colors.length];
+                        wordBox.appendChild(span);
+                    });
+                });
+        }
+
+        function resetWord() {
+            fetch('/reset_word', {
+                method: 'POST'
+            }).then(() => {
+                document.getElementById('word_box').innerText = '';
+            });
+        }
+
+        setInterval(() => {
+            updateLetter();
+            updateWord();
+        }, 500);
+    </script>
+</body>
+</html>
